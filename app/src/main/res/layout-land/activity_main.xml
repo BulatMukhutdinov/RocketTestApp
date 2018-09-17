@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/size1x"
+    tools:context=".MainActivity">
+
+    <Spinner
+        android:id="@+id/firstAlgorithm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/size1x"
+        android:entries="@array/algorithms_array"
+        app:layout_constraintEnd_toStartOf="@id/secondAlgorithm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/secondAlgorithm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size1x"
+        android:entries="@array/algorithms_array"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/firstAlgorithm"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ru.bulat.mukhutdinov.rockettestapp.RocketView
+        android:id="@+id/firstImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/size1x"
+        android:layout_marginBottom="@dimen/size1x"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toTopOf="@id/sizeWidth"
+        app:layout_constraintEnd_toEndOf="@id/firstAlgorithm"
+        app:layout_constraintStart_toStartOf="@id/firstAlgorithm"
+        app:layout_constraintTop_toBottomOf="@id/firstAlgorithm"
+        tools:ignore="ContentDescription" />
+
+    <ru.bulat.mukhutdinov.rockettestapp.RocketView
+        android:id="@+id/secondImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/size1x"
+        android:layout_marginBottom="@dimen/size1x"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toTopOf="@id/sizeWidth"
+        app:layout_constraintEnd_toEndOf="@id/secondAlgorithm"
+        app:layout_constraintStart_toStartOf="@id/secondAlgorithm"
+        app:layout_constraintTop_toBottomOf="@id/secondAlgorithm"
+        tools:ignore="ContentDescription" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/sizeWidth"
+        style="@style/SizeEditText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/X"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/width"
+            android:inputType="number" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/X"
+        style="@style/TextAppearance.AppCompat.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size1x"
+        android:text="X"
+        app:layout_constraintBottom_toBottomOf="@id/sizeHeight"
+        app:layout_constraintEnd_toStartOf="@id/sizeHeight"
+        app:layout_constraintStart_toEndOf="@id/sizeWidth"
+        app:layout_constraintTop_toTopOf="@id/sizeHeight"
+        tools:ignore="HardcodedText" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/sizeHeight"
+        style="@style/SizeEditText"
+        android:layout_marginStart="@dimen/size1x"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/X">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/height"
+            android:inputType="number" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/generate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size2x"
+        android:text="@string/generate"
+        app:layout_constraintBottom_toBottomOf="@id/sizeHeight"
+        app:layout_constraintStart_toEndOf="@id/sizeHeight"
+        app:layout_constraintTop_toTopOf="@id/sizeHeight" />
+
+    <TextView
+        android:id="@+id/speedLabel"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/speed"
+        app:layout_constraintBottom_toBottomOf="@id/sizeHeight"
+        app:layout_constraintStart_toStartOf="@id/secondAlgorithm"
+        app:layout_constraintTop_toTopOf="@id/sizeHeight" />
+
+    <SeekBar
+        android:id="@+id/speed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/sizeHeight"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/speedLabel"
+        app:layout_constraintTop_toTopOf="@id/sizeHeight" />
+</androidx.constraintlayout.widget.ConstraintLayout>

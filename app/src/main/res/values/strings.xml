@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">RocketTestApp</string>
+    <string name="size">Size</string>
+    <string name="generate">Generate</string>
+    <string name="speed">Speed</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+
+    <string-array name="algorithms_array">
+        <item>Algorithm #1</item>
+        <item>Algorithm #2</item>
+        <item>Algorithm #3</item>
+    </string-array>
+</resources>

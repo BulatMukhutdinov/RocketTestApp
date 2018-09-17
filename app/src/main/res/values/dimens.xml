@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--standard sizes-->
+    <dimen name="size_half">4dp</dimen>
+    <dimen name="size1x">8dp</dimen>
+    <dimen name="size2x">16dp</dimen>
+
+    <dimen name="size_width">80dp</dimen>
+</resources>

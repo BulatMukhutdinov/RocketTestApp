@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/size1x"
+    tools:context=".MainActivity">
+
+    <Spinner
+        android:id="@+id/firstAlgorithm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size1x"
+        android:entries="@array/algorithms_array"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ru.bulat.mukhutdinov.rockettestapp.RocketView
+        android:id="@+id/firstImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/size1x"
+        android:layout_marginBottom="@dimen/size1x"
+        app:layout_constraintBottom_toTopOf="@id/secondAlgorithm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstAlgorithm"
+        tools:ignore="ContentDescription" />
+
+    <Spinner
+        android:id="@+id/secondAlgorithm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:entries="@array/algorithms_array"
+        app:layout_constraintBottom_toTopOf="@id/secondImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/firstImage" />
+
+    <ru.bulat.mukhutdinov.rockettestapp.RocketView
+        android:id="@+id/secondImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/size1x"
+        android:layout_marginBottom="@dimen/size1x"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toTopOf="@id/size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/secondAlgorithm"
+        tools:ignore="ContentDescription" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/generate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size1x"
+        android:text="@string/generate"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/size" />
+
+    <TextView
+        android:id="@+id/speedLabel"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/size1x"
+        android:text="@string/speed"
+        app:layout_constraintBottom_toBottomOf="@id/generate"
+        app:layout_constraintStart_toEndOf="@id/generate"
+        app:layout_constraintTop_toTopOf="@id/generate" />
+
+    <SeekBar
+        android:id="@+id/speed"
+        style="@style/Widget.AppCompat.SeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/generate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/speedLabel"
+        app:layout_constraintTop_toTopOf="@id/generate" />
+</androidx.constraintlayout.widget.ConstraintLayout>
