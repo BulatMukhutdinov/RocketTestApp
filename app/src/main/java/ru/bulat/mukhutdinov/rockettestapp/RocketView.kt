@@ -4,10 +4,17 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.os.Handler
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.Subject
+import timber.log.Timber
+import java.util.concurrent.TimeUnit
+
 
 class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
@@ -19,18 +26,18 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             xCellSize = measuredWidth / value.size
             yCellSize = measuredHeight / value.size
             invalidate()
-            redrawingHandler.removeCallbacksAndMessages(null)
             isRedrawFinished = true
+            compositeDisposable.clear()
         }
 
-
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val redrawingHandler = Handler()
 
     private var _cellsMatrix = arrayOf<IntArray>()
     private var isRedrawFinished = true
     private var xCellSize = 0
     private var yCellSize = 0
+
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -45,7 +52,6 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                     } else {
                         paint.color = Color.BLACK
                     }
-
                     canvas.drawRect(columnIndex.toFloat() * xCellSize, rowIndex.toFloat() * yCellSize,
                             (columnIndex + 1).toFloat() * xCellSize, (rowIndex + 1).toFloat() * yCellSize, paint)
                 }
@@ -60,34 +66,36 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     fun redrawClosure(event: MotionEvent, selectedAlgorithm: AlgorithmType) {
-        val clickedCell = (event.y / yCellSize).toInt() to (event.x / xCellSize).toInt()
+        if (_cellsMatrix.isNotEmpty()) {
+            val clickedCell = (event.y / yCellSize).toInt() to (event.x / xCellSize).toInt()
 
-        val selectedColor = _cellsMatrix[clickedCell.first][clickedCell.second]
-        val remainingCells = mutableListOf(clickedCell.first to clickedCell.second)
-        val markedCells = mutableListOf(clickedCell.first to clickedCell.second)
+            val selectedColor = _cellsMatrix[clickedCell.first][clickedCell.second]
+            val remainingCells = mutableListOf(clickedCell.first to clickedCell.second)
+            val markedCells = mutableListOf(clickedCell.first to clickedCell.second)
 
-        while (remainingCells.isNotEmpty()) {
-            val currentCell = when (selectedAlgorithm) {
-                AlgorithmType.BFS -> remainingCells.removeAt(0)
-                AlgorithmType.DFS -> remainingCells.removeAt(remainingCells.size - 1)
-                AlgorithmType.HZ -> remainingCells.removeAt(0)
+            while (remainingCells.isNotEmpty()) {
+                val currentCell = when (selectedAlgorithm) {
+                    AlgorithmType.BFS -> remainingCells.removeAt(0)
+                    AlgorithmType.DFS -> remainingCells.removeAt(remainingCells.size - 1)
+                    AlgorithmType.RANDOM -> remainingCells.removeAt((0 until remainingCells.size).random())
+                }
+
+                // top
+                addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
+                        cellX = currentCell.first, cellY = currentCell.second + 1, selectedColor = selectedColor)
+                // right
+                addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
+                        cellX = currentCell.first + 1, cellY = currentCell.second, selectedColor = selectedColor)
+                // bottom
+                addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
+                        cellX = currentCell.first, cellY = currentCell.second - 1, selectedColor = selectedColor)
+                // left
+                addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
+                        cellX = currentCell.first - 1, cellY = currentCell.second, selectedColor = selectedColor)
+
             }
-
-            // top
-            addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
-                    cellX = currentCell.first, cellY = currentCell.second + 1, selectedColor = selectedColor)
-            // right
-            addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
-                    cellX = currentCell.first + 1, cellY = currentCell.second, selectedColor = selectedColor)
-            // bottom
-            addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
-                    cellX = currentCell.first, cellY = currentCell.second - 1, selectedColor = selectedColor)
-            // left
-            addToRemaining(remainingCells = remainingCells, markedCells = markedCells,
-                    cellX = currentCell.first - 1, cellY = currentCell.second, selectedColor = selectedColor)
-
+            redraw(markedCells, selectedColor)
         }
-        redraw(markedCells, selectedColor)
     }
 
     private fun addToRemaining(remainingCells: MutableList<Pair<Int, Int>>,
@@ -108,16 +116,23 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         if (isRedrawFinished) {
             isRedrawFinished = false
 
-            markedCells.forEachIndexed { index, pair ->
-                redrawingHandler.postDelayed({
-                    if (index == markedCells.size - 1) {
-                        isRedrawFinished = true
+            compositeDisposable.add(Subject.fromIterable(markedCells)
+                    .concatMap {
+                        Observable.just(it).delay(BASE_REDRAW_DELAY_MS / speed, TimeUnit.MILLISECONDS)
                     }
-
-                    _cellsMatrix[pair.first][pair.second] = colorToRedraw
-                    invalidate()
-                }, index.toLong() * 10000 / speed)
-            }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            {
+                                _cellsMatrix[it.first][it.second] = colorToRedraw
+                                invalidate()
+                            },
+                            { Timber.e(it) },
+                            { isRedrawFinished = true }))
         }
+    }
+
+    companion object {
+        private const val BASE_REDRAW_DELAY_MS = 5000L
     }
 }

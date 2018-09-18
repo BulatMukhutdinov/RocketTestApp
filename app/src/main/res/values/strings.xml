@@ -5,6 +5,7 @@
     <string name="speed">Speed</string>
     <string name="width">Width</string>
     <string name="height">Height</string>
+    <string name="generate_error">Width and height must be over 0</string>
 
     <string-array name="algorithms_array">
         <item>Algorithm #1</item>
