@@ -6,10 +6,11 @@
     <string name="width">Width</string>
     <string name="height">Height</string>
     <string name="generate_error">Width and height must be over 0</string>
+    <string name="redraw_error">Oops…the developer has calculated something wrong. Pls try to re-generate view</string>
 
     <string-array name="algorithms_array">
-        <item>Algorithm #1</item>
-        <item>Algorithm #2</item>
-        <item>Algorithm #3</item>
+        <item>BFS</item>
+        <item>DFS</item>
+        <item>RANDOM</item>
     </string-array>
 </resources>

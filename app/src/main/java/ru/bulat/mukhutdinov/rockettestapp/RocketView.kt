@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -15,7 +16,6 @@ import io.reactivex.subjects.Subject
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-
 class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     var speed = 1
@@ -23,8 +23,7 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         get() = _cellsMatrix
         set(value) {
             _cellsMatrix = Array(value.size) { value[it].copyOf() }
-            xCellSize = measuredWidth / value.size
-            yCellSize = measuredHeight / value.size
+            markedCells = mutableListOf()
             invalidate()
             isRedrawFinished = true
             compositeDisposable.clear()
@@ -33,6 +32,8 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var _cellsMatrix = arrayOf<IntArray>()
+    private var markedCells = mutableListOf<Pair<Int, Int>>()
+    private var selectedColor = 0
     private var isRedrawFinished = true
     private var xCellSize = 0
     private var yCellSize = 0
@@ -44,6 +45,9 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
         if (_cellsMatrix.isNotEmpty()) {
             paint.style = Paint.Style.FILL
+
+            xCellSize = measuredWidth / _cellsMatrix[0].size
+            yCellSize = measuredHeight / _cellsMatrix.size
 
             _cellsMatrix.forEachIndexed { rowIndex, row ->
                 row.forEachIndexed { columnIndex, value ->
@@ -65,13 +69,23 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         this.setMeasuredDimension(measuredWidth, measuredHeight)
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        compositeDisposable.dispose()
+    }
+
     fun redrawClosure(event: MotionEvent, selectedAlgorithm: AlgorithmType) {
         if (_cellsMatrix.isNotEmpty()) {
             val clickedCell = (event.y / yCellSize).toInt() to (event.x / xCellSize).toInt()
 
-            val selectedColor = _cellsMatrix[clickedCell.first][clickedCell.second]
+            if (clickedCell.first >= _cellsMatrix.size || clickedCell.second >= _cellsMatrix[0].size) {
+                context.toast(context.getString(R.string.redraw_error))
+                return
+            }
+
+            selectedColor = _cellsMatrix[clickedCell.first][clickedCell.second]
             val remainingCells = mutableListOf(clickedCell.first to clickedCell.second)
-            val markedCells = mutableListOf(clickedCell.first to clickedCell.second)
+            markedCells = mutableListOf(clickedCell.first to clickedCell.second)
 
             while (remainingCells.isNotEmpty()) {
                 val currentCell = when (selectedAlgorithm) {
@@ -94,7 +108,8 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
                         cellX = currentCell.first - 1, cellY = currentCell.second, selectedColor = selectedColor)
 
             }
-            redraw(markedCells, selectedColor)
+
+            redraw()
         }
     }
 
@@ -111,14 +126,14 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
-    private fun redraw(markedCells: MutableList<Pair<Int, Int>>, selectedColor: Int) {
+    private fun redraw() {
         val colorToRedraw = if (selectedColor == 1) 0 else 1
         if (isRedrawFinished) {
             isRedrawFinished = false
 
             compositeDisposable.add(Subject.fromIterable(markedCells)
                     .concatMap {
-                        Observable.just(it).delay(BASE_REDRAW_DELAY_MS / speed, TimeUnit.MILLISECONDS)
+                        Observable.just(it).delay(BASE_FRAME_RATE_MS / speed, TimeUnit.MILLISECONDS)
                     }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -132,7 +147,37 @@ class RocketView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
+
+    public override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.cellsMatrix = cellsMatrix
+        savedState.markedCells = markedCells
+        savedState.selectedColor = selectedColor
+        savedState.speed = speed
+        return savedState
+    }
+
+    public override fun onRestoreInstanceState(state: Parcelable) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            cellsMatrix = state.cellsMatrix
+            markedCells = state.markedCells
+            selectedColor = state.selectedColor
+            speed = state.speed
+            redraw()
+        } else {
+            super.onRestoreInstanceState(state)
+        }
+    }
+
     companion object {
-        private const val BASE_REDRAW_DELAY_MS = 5000L
+        private const val BASE_FRAME_RATE_MS = 5000L
+    }
+
+    class SavedState(superState: Parcelable?) : View.BaseSavedState(superState) {
+        var cellsMatrix = arrayOf<IntArray>()
+        var markedCells = mutableListOf<Pair<Int, Int>>()
+        var selectedColor = 0
+        var speed = 0
     }
 }

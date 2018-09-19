@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         setUpSpeedView()
 
         generate.setOnClickListener {
+            updateSize()
             if (xSize > 0 && ySize > 0) {
                 generate(cellsAmountX = xSize, cellsAmountY = ySize)
             } else {
@@ -95,6 +96,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateSize() {
+        val sizeHeight = findViewById<TextInputLayout>(R.id.sizeHeight)?.editText
+        val sizeWidth = findViewById<TextInputLayout>(R.id.sizeWidth)?.editText
+        if (sizeHeight != null && sizeWidth != null) {
+            ySize = sizeHeight.text.toString().toIntOrNull() ?: 0
+            xSize = sizeWidth.text.toString().toIntOrNull() ?: 0
+        }
+    }
+
     private fun onRocketViewClick(event: MotionEvent) =
             if (event.action == MotionEvent.ACTION_DOWN) {
                 firstImage.redrawClosure(event, fromIntValue(firstAlgorithm.selectedItemPosition))
@@ -113,12 +123,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        val sizeHeight = findViewById<TextInputLayout>(R.id.sizeHeight)?.editText
-        val sizeWidth = findViewById<TextInputLayout>(R.id.sizeWidth)?.editText
-        if (sizeHeight != null && sizeWidth != null) {
-            ySize = sizeHeight.text.toString().toIntOrNull() ?: 0
-            xSize = sizeWidth.text.toString().toIntOrNull() ?: 0
-        }
+        updateSize()
 
         outState.putInt(STATE_X_SIZE, xSize)
         outState.putInt(STATE_Y_SIZE, ySize)
